@@ -1,5 +1,6 @@
-<html>
 
+<html>
+<comment>The main page involving the gameplay</comment>
 <head>
 
 <script type="text/javascript">
@@ -33,6 +34,7 @@ function unbindAllKeys()
 }
 
 function createCallBack( letter )
+/* Function implementing the action to be taken after entering of letters */
 {
 	return function()
 	{
@@ -76,6 +78,7 @@ function createCallBack( letter )
 	}
 }
 function start()
+/* Starts the Hangman game for the user and sets the words to be used in the session.*/
 {
 	$(".attempt1").hide();
 	$(".attempt2").hide();
@@ -120,6 +123,7 @@ $("#back").click(function(){
 	});
 });
 function myFunction()
+/* function involving the playing of the game */
 {
 	score=sessionStorage.getItem("score");
 	$("#score").text((score++).toString());
@@ -137,7 +141,6 @@ function myFunction()
 		$(".letter").attr("class",letter);
 		$("."+letter).click(createCallBack(letter));
 	}
-	//alert(word);
 	$(document).keyup(function(e){
 		if(e.which==116) return;
 		var index=word.indexOf(String.fromCharCode(e.which));
