@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from http.server import BaseHTTPRequestHandler,HTTPServer
 import urllib.request
+import MySQLdb
 import urllib
 import json
 import xml.etree.ElementTree as ET
@@ -105,26 +106,30 @@ class myHandler(BaseHTTPRequestHandler):
         if('login' in self.path):
             temp=self.path[2:]
             userSet=temp.split('&')
-            user={}
-            user[userSet[0].split('=')[1]]=userSet[1].split('=')[1]
+            user=userSet[0].split('=')[1]
+            pwd=userSet[1].split('=')[1]
+            
             self.send_response(200)
             print(user)
             flag=False
             print('LOGIN PAGE')
-            with open('login.txt','r') as infile:
-                for line in infile:
-                    a={}
-                    a=eval(line)
-                    if(user == a):
-                        print("YAY")
-                        with open('main.html') as file:
+            db = MySQLdb.connect(host="localhost",
+                     user="vinga",
+                     passwd="vingaram",
+                     db="vingadb")
+            cur = db.cursor()
+            select_stmt = "SELECT * FROM Login WHERE user = %(user)s AND pwd = %(pwd)s"
+            cursor.execute(select_stmt, { 'user': user ,'pwd': pwd })
+            if cur.rowcount>0:
+                with open('main.html') as file:
                             string=file.read()
                             self.wfile.write(bytes(string,'utf-8'))
                         flag=True
                         break;
             if(not flag):
                 self.wfile.write(bytes("FAILURE",'utf-8'))
-            infile.close()
+            db.close()
+            
         elif('from_signup' in self.path):
             temp=self.path[2:]
             userSet=temp.split('&')
@@ -133,22 +138,16 @@ class myHandler(BaseHTTPRequestHandler):
             user[key]=userSet[1].split('=')[1]
             print(user)
             print('SIGNUP PAGE')
-            with open('login.txt','a+') as file:
-                file.seek(0)
-                flag=False
-                for line in file:
-                    a={}
-                    a=eval(line)
-                    if(key in a.keys()):
-                        flag=True
-                        self.wfile.write(bytes("FAILURE",'utf-8'))
-                        break
-                if(not flag):
-                    file.write(str(user))
-                    file.write('\n')
-                    self.wfile.write(bytes("SUCCESS",'utf-8'))
-                    with open(key+'.json','w+') as outfile:
-                        json.dump(wordList, outfile)
+            db = MySQLdb.connect(host="localhost",
+                     user="vinga",
+                     passwd="vingaram",
+                     db="vingadb")
+            cur = db.cursor()
+            queryData=(key,user[key])
+            cur.execute("INSERT INTO Login VALUES(%s,%s)",queryData)
+            db.close()
+            self.wfile.write(bytes("SUCCESS",'utf-8'))
+
         elif('signup' in self.path):
             string=""
             with open('registration.html') as file:
